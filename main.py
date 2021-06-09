@@ -3,12 +3,13 @@ import requests
 import re
 import os
 
-# Url date & edition changes and if there is any second edition, append extension -B
+# Establish starting date and edition.
 edition = 42924
 day = 8
 month = 4
 year = 2021
 
+# Select number of days to look forward
 for i in range(2):
     url = f'https://www.diariooficial.interior.gob.cl/edicionelectronica/empresas_cooperativas.php?date={str(day).zfill(2)}-{str(month).zfill(2)}-{year}&edition={edition}'
     html_text = requests.get(url).text
@@ -17,16 +18,17 @@ for i in range(2):
     if soup.find('p', class_='nofound'):
         day = day + 1
     else:
-        path = f'Files/{edition}'
+        path = f'diario_oficial/{edition}'
         try:
             os.mkdir(path)
         except OSError:
-            print("Creation of the directory %s failed" % path)
+            print("Error al crear carpeta %s" % path)
         else:
-            print("Successfully created the directory %s " % path)
+            print("Se ha creado carpeta %s " % path)
 
         container = soup.find('div', class_='wrapsection')
-        #anchor = container.find('a', attrs={'href': re.compile("^http://")})
+
+#   If needed, limit how many files are going to be downloaded for each edition.
         for anchor in container.find_all('a', attrs={'href': re.compile("^http://")}, limit=3):
             file_url = anchor.get('href')
             file_name = anchor.text.split(" ")[2].replace("(", "").replace(")", "")
@@ -36,7 +38,3 @@ for i in range(2):
             print(file_name)
         edition = edition + 1
         day = day + 1
-
-#  to download all files, replace line 20 with this and indent
-#for anchor in soup.find_all('a', attrs={'href': re.compile("^http://")}):
-
